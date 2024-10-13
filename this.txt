@@ -1,0 +1,168 @@
+
+
+1. **Arrow Functions:**
+   - Arrow functions have a unique behavior related to `this`.
+   - They **inherit the `this` value** from their **surrounding lexical scope** (where they are defined).
+   - This means that the value of `this` inside an arrow function is determined by the context in which the arrow function is created, not how it is called.
+
+   **Example:**
+   ```javascript
+   const person = {
+     name: 'Alice',
+     greet: function() {
+       // Inside this function, 'this' refers to the 'person' object
+       console.log(`Hello, I'm ${this.name}.`);
+     },
+     greetArrow: () => {
+       // Inside this arrow function, 'this' does not refers to the 'person' object
+       console.log(`Hello (arrow), I'm ${this.name}.`);
+     }
+   };
+   person.greet();        // Output: Hello, I'm Alice.
+   person.greetArrow();   // Output:Hello (arrow), I'm undefined.
+   ```
+
+  This is how you use this for arrow functions 
+
+  ```const person = {
+    name: 'Alice',
+    greet: function() {
+      // Inside this function, 'this' refers to the 'person' object
+      console.log(`Hello, I'm ${this.name}.`);
+    },
+    greetArrow: function() {
+      // Capture the outer context (usually named 'self' or 'that')
+      const self = this;
+      // Inside this arrow function, use 'self' to refer to the 'person' object
+      const arrowGreeting = () => {
+        console.log(`Hello (arrow), I'm ${self.name}.`);
+      };
+      arrowGreeting();
+      }
+  };
+  person.greet();        // Output: Hello, I'm Alice.
+  person.greetArrow();   // Output: Hello (arrow), I'm Alice.
+  ```
+
+2. **Regular Function Expressions:**
+   - Regular functions create their own `this` context based on how they are called.
+   - The value of `this` inside a regular function depends on the function invocation (e.g., method call, standalone function, etc.).
+
+   **Example:**
+   ```javascript
+   function sayHello() {
+     // Inside this function, 'this' depends on how it's called
+     console.log(`Hello, I'm ${this.name}.`);
+   }
+
+   const person1 = { name: 'Bob' };
+   const person2 = { name: 'Charlie' };
+
+   person1.sayHello = sayHello;
+   person2.sayHello = sayHello;
+
+   person1.sayHello();   // Output: Hello, I'm Bob.
+   person2.sayHello();   // Output: Hello, I'm Charlie.
+   ```
+
+3. **Binding `this` Explicitly:**
+   - Regular functions allow you to explicitly bind a specific `this` value using methods like `bind`, `call`, or `apply`.
+   - Arrow functions do not have their own `this`, so binding methods do not apply to them.
+
+   **Example (Explicit Binding):**
+   ```javascript
+   function greet() {
+     console.log(`Hello, I'm ${this.name}.`);
+   }
+
+   const person3 = { name: 'David' };
+
+   const boundGreet = greet.bind(person3);
+   boundGreet();   // Output: Hello, I'm David.
+   ```
+
+In summary:
+- Use arrow functions when you want to maintain the outer context (lexical `this`) and have concise expressions.
+- Use regular functions when you need more control over `this` or when you want to explicitly bind it.
+
+
+Arrow functions behave differently when it comes to the `this` context, and indeed, the `bind`, `apply`, and `call` methods do not work as expected with arrow functions. Let's explore this further:
+
+1. **Arrow Functions and `this`:**
+   - Arrow functions do not have their own `this` context.
+   - Instead, they **inherit the `this` value** from their surrounding lexical scope (where they are defined).
+   - This behavior makes arrow functions particularly useful for maintaining the outer context.
+
+2. **Why `bind`, `apply`, and `call` Don't Work:**
+   - These methods are used to explicitly set the `this` value for a function.
+   - However, arrow functions ignore any attempt to change their `this` context using these methods.
+   - When you call `bind`, `apply`, or `call` on an arrow function, it has no effect on the function's behavior.
+
+3. **Example: Arrow Function vs. Regular Function:**
+   ```javascript
+   const person = {
+     name: 'Alice',
+     greet: function() {
+       console.log(`Hello, I'm ${this.name}.`);
+     },
+     greetArrow: () => {
+       console.log(`Hello (arrow), I'm ${this.name}.`);
+     }
+   };
+
+   // Using regular function (maintains its own 'this')
+   person.greet();        // Output: Hello, I'm Alice.
+
+   // Using arrow function (inherits 'this' from surrounding scope)
+   person.greetArrow();   // Output: Hello (arrow), I'm undefined.
+   ```
+
+4. **Workaround for Arrow Functions:**
+   - If you need to explicitly set the `this` value inside an arrow function, you can do so by capturing the desired context in a separate variable (often named `self` or `that`).
+   - Then, use that variable inside the arrow function.
+
+   ```javascript
+   const personWithSelf = {
+     name: 'Bob',
+     greetArrowWithSelf: function() {
+       const self = this; // Capture the outer 'this'
+       setTimeout(() => {
+         console.log(`Hello (arrow with self), I'm ${self.name}.`);
+       }, 1000);
+     }
+   };
+
+   personWithSelf.greetArrowWithSelf(); // Output (after 1 second): Hello (arrow with self), I'm Bob.
+   ```
+
+In summary, arrow functions are powerful for maintaining context, but they don't allow explicit `this` binding. Regular functions, on the other hand, provide more flexibility in controlling the `this` value. 😊
+
+
+Why Arrow Functions Use Lexical this:
+  -Arrow functions were designed this way intentionally.
+  -They are useful for scenarios where you want to capture the surrounding context (e.g., event handlers, callbacks, closures) without worrying about changing this.
+  -Prior to arrow functions, developers often used workarounds like creating a variable (that,  self, etc.) to store the outer this context.
+
+
+In JavaScript, the value of this is determined by how a function is called. When a function is called as a method of an object, this is set to the object the method is called on.
+
+However, when you’re working with callback functions (like the ones you pass to Array.prototype.map, Array.prototype.filter, Array.prototype.findIndex, etc.), this doesn’t work the way you might expect.
+
+By default, this inside these callback functions is undefined (in strict mode), because the callbacks are not methods of any object. But sometimes, you might want this to refer to a certain object. That’s where thisArg comes in.
+
+When you pass an object as thisArg, this will refer to that object inside your callback function. Here’s an example:
+
+JavaScript
+
+let obj = { value: 5 };
+
+function multiply(n) {
+  return this.value * n;
+}
+
+let numbers = [1, 2, 3, 4, 5];
+let doubled = numbers.map(multiply, obj);  // Outputs: [5, 10, 15, 20, 25]
+
+In this example, multiply.call(obj, 2) calls the function multiply with obj as this, and 2 as an argument. So, within the multiply function, this.value refers to obj.value, which is 5. Therefore, the function returns 5 * 2, which is 10. This is a simple demonstration of how thisArg can be used to direct this within a function.
+
+So, in the context of Array.prototype.findIndex, the second argument is thisArg, which can be used to specify the this context for the callback function. If it’s not provided, this will be undefined inside the callback function. If thisArg is provided, this inside the callback function will be thisArg. This allows you to control what this refers to inside the callback function.
